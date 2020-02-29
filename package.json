@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "predev": "npm run clean",
     "dev": "gulp dev",
     "clean": "rimraf dist",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -19,7 +20,10 @@
   },
   "homepage": "https://github.com/rskwiat/gulp-banner-builder#readme",
   "devDependencies": {
+    "@babel/core": "^7.8.6",
+    "@babel/preset-env": "^7.8.6",
     "gulp": "^4.0.2",
+    "gulp-babel": "^8.0.0",
     "gulp-connect": "^5.7.0",
     "gulp-rename": "^2.0.0",
     "gulp-replace": "^1.0.0",

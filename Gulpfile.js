@@ -3,6 +3,7 @@ const replace = require('gulp-replace');
 const connect = require('gulp-connect');
 const sass = require('gulp-sass');
 const rename = require('gulp-rename');
+const babel = require('gulp-babel');
 
 sass.compiler = require('node-sass');
 
@@ -18,11 +19,12 @@ const settings = {
   root: 'src',
   dist: 'dist',
   port: '9999',
-  prod: 'production'
 };
 
+
+
 const server = (done) => {
-  return connect.server({
+  connect.server({
     root: settings.dist,
 		port: settings.port
   });
@@ -30,7 +32,7 @@ const server = (done) => {
 }
 
 const moveFiles = (done) => {
-  return src(`${settings.root}/index.html`)
+  src(`${settings.root}/index.html`)
   .pipe(replace('%DATE%', newdate))
   .pipe(dest(`${settings.dist}`));
 
@@ -38,23 +40,46 @@ const moveFiles = (done) => {
 }
 
 const buildSCSS = (done) => {
-  return src(`${settings.root}/scss/**.scss`)
+  src(`${settings.root}/scss/**.scss`)
     .pipe(sass().on('error', sass.logError))
     .pipe(rename({
-      suffix: `.${newdate}.`
+      suffix: `.${newdate}`
     }))
     .pipe(dest(`${settings.dist}/css`))
   done;
 }
 
-const build = (done) => {
-  moveFiles();
-  buildSCSS();
-
+const buildJS = (done) => {
+  src(`${settings.root}/js/base.js`)
+  .pipe(babel({
+    presets: ['@babel/preset-env']
+  }))
+  .pipe(rename({
+    suffix: `.${newdate}`
+  }))
+  .pipe(dest(`${settings.dist}/js`));
   done;
 }
 
-exports.dev = parallel([build, server])
+const devWatch = () => {
+  watch([
+    'src/js/**/*.js',
+    'src/scss/**/*.scss',
+    'src/index.html'
+  ], function(done) {
+    build();
+    done();
+  });
+}
+
+const build = (done) => {
+  moveFiles();
+  buildSCSS();
+  buildJS();
+  done;
+}
+
+exports.dev = parallel([build, server, devWatch])
 
 
 
