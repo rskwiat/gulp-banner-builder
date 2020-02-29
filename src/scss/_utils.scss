@@ -1,0 +1,8 @@
+@function retina($width) {
+  @return ($width / 2);
+}
+
+@mixin center($x,$y) {
+  -webkit-transform: center($x,$y);
+	transform: center($x,$y);
+}
