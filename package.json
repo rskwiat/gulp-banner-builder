@@ -4,10 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "predev": "npm run clean",
-    "dev": "gulp dev",
-    "clean": "rimraf dist",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "clean": "rimraf dist"
   },
   "repository": {
     "type": "git",
@@ -22,12 +19,25 @@
   "devDependencies": {
     "@babel/core": "^7.8.6",
     "@babel/preset-env": "^7.8.6",
-    "gulp": "^4.0.2",
+    "babel-eslint": "^10.1.0",
+    "eslint": "^6.1.0",
+    "eslint-config-airbnb": "^18.0.1",
+    "eslint-plugin-import": "^2.20.1",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-react": "^7.18.3",
+    "eslint-plugin-react-hooks": "^1.7.0",
+    "gulp": "^3.9.1",
     "gulp-babel": "^8.0.0",
+    "gulp-clean-css": "^4.2.0",
     "gulp-connect": "^5.7.0",
+    "gulp-htmlmin": "^5.0.1",
+    "gulp-imagemin": "^7.1.0",
     "gulp-rename": "^2.0.0",
     "gulp-replace": "^1.0.0",
     "gulp-sass": "^4.0.2",
+    "gulp-uglify": "^3.0.2",
+    "imagemin": "^7.0.1",
+    "imagemin-pngquant": "^8.0.0",
     "node-sass": "^4.13.1",
     "rimraf": "^3.0.2"
   }

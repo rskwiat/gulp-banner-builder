@@ -1,12 +1,3 @@
-const { src, dest, series, parallel, watch } = require('gulp');
-const replace = require('gulp-replace');
-const connect = require('gulp-connect');
-const sass = require('gulp-sass');
-const rename = require('gulp-rename');
-const babel = require('gulp-babel');
-
-sass.compiler = require('node-sass');
-
 const dateObj = new Date();
 const year = dateObj.getFullYear();
 const month = dateObj.getMonth() + 1;
@@ -14,70 +5,124 @@ const today = dateObj.getDate();
 const newdate = `${year}${month}${today}`;
 
 const settings = {
-  cdn: 'https://cdn.my-content-delivery-network.com/brand-name',
+  cdn: 'https://cdn.mediabrix.com/o38/campaigns/my-brand-name/',
   brand: 'brandName',
   root: 'src',
-  dist: 'dist',
+  dev: 'dist',
   port: '9999',
+  prod: 'production'
 };
 
-const server = (done) => {
+const gulp = require('gulp');
+const rename = require('gulp-rename');
+const connect = require('gulp-connect');
+const sass = require('gulp-sass');
+const cleanCSS = require('gulp-clean-css');
+const imagemin = require('gulp-imagemin');
+const pngquant = require('imagemin-pngquant');
+const replace = require('gulp-replace');
+const htmlmin = require('gulp-htmlmin');
+const babel = require('gulp-babel');
+const uglify = require('gulp-uglify');
+
+gulp.task('connect', () => {
   connect.server({
-    root: settings.dist,
+    root: settings.dev,
 		port: settings.port
   });
-  done;
-}
+});
 
-const moveFiles = (done) => {
-  src(`${settings.root}/index.html`)
-  .pipe(replace('%DATE%', newdate))
-  .pipe(dest(`${settings.dist}`));
+gulp.task('move:dev', () => {
+  gulp.src(`${settings.root}/index.html`)
+    .pipe(gulp.dest(`${settings.dev}`));
+  gulp.src(`${settings.root}/images/**`)
+    .pipe(gulp.dest(`${settings.dev}/images`));
+  gulp.src(`${settings.root}/js/starter.js`)
+    .pipe(gulp.dest(`${settings.dev}/js`));
+});
 
-  done;
-}
+/**
+  Styling Tasks
+**/
 
-const buildSCSS = (done) => {
-  src(`${settings.root}/scss/**.scss`)
-    .pipe(sass().on('error', sass.logError))
+gulp.task('build:sass', () => {
+  gulp.src(`${settings.root}/scss/**.scss`)
+    .pipe(sass(
+      { outputStyle: 'compressed' }
+    ).on('error', sass.logError))
+    .pipe(gulp.dest(`${settings.dev}/css`));
+});
+
+gulp.task('minify:CSS', () => {
+  return gulp.src(`${settings.dev}/css/base.css`)
+    .pipe(replace('../', settings.cdn))
+    .pipe(cleanCSS())
     .pipe(rename({
-      suffix: `.${newdate}`
+      basename: settings.brand,
+      suffix: `.${newdate}.min`
     }))
-    .pipe(dest(`${settings.dist}/css`))
-  done;
-}
+    .pipe(gulp.dest(`${settings.prod}`));
+});
 
-const buildJS = (done) => {
-  src(`${settings.root}/js/base.js`)
-  .pipe(babel({
-    presets: ['@babel/preset-env']
-  }))
+/**
+  Javascript Tasks
+**/
+
+gulp.task('build:js', () => {
+  return gulp.src(`${settings.root}/js/base.js`)
+    .pipe(babel({
+      presets: ['@babel/preset-env']
+    }))
+    .pipe(rename({
+      basename: 'base',
+    }))
+    .pipe(gulp.dest(`${settings.dev}/js`));
+});
+
+gulp.task('minify:js', () => {
+  return gulp.src(`${settings.dev}/js/base.js`)
+    .pipe(uglify({
+        mangle: false
+    }))
+    .pipe(rename({
+      basename: settings.brand,
+      suffix: `.${newdate}.min`
+    }))
+    .pipe(gulp.dest(`${settings.prod}`));
+});
+
+/**
+  Optimization Tasks
+**/
+
+gulp.task('optimize:images', () => {
+	return gulp.src(`${settings.dev}/images/**`)
+		.pipe(imagemin({
+			progressive: true,
+			svgoPlugins: [{ removeViewBox: false }],
+			use: [pngquant()]
+		}))
+		.pipe(gulp.dest(`${settings.prod}/images`));
+});
+
+gulp.task('optimize:html', () => {
+  return gulp.src(`${settings.root}/base.html`)
+  .pipe(htmlmin({ collapseWhitespace: true }))
   .pipe(rename({
-    suffix: `.${newdate}`
+    basename: settings.brand,
+    suffix: `.${newdate}.min`
   }))
-  .pipe(dest(`${settings.dist}/js`));
-  done;
-}
+  .pipe(gulp.dest(`${settings.prod}`));
+});
 
-const devWatch = () => {
-  watch([
-    'src/js/**/*.js',
-    'src/scss/**/*.scss',
-    'src/index.html'
-  ], function(done) {
-    build();
-    done();
-  });
-}
+/**
+  Gulp Named Tasks
+**/
 
-const build = (done) => {
-  moveFiles();
-  buildSCSS();
-  buildJS();
-  done;
-}
+gulp.task('dev:watch', () => {
+  gulp.watch(`${settings.root}/**/*`, ['build']);
+});
 
-exports.dev = parallel([build, server, devWatch])
-
-
-
+gulp.task('dev', ['build', 'connect', 'dev:watch']);
+gulp.task('build', ['move:dev', 'build:sass', 'build:js']);
+gulp.task('production', ['minify:CSS', 'minify:js', 'optimize:images', 'optimize:html']);
