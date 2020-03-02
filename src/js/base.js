@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('ad init');
   }
 
-
   initAd();
 
 });

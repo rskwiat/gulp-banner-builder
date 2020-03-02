@@ -21,8 +21,6 @@ const settings = {
   port: '9999',
 };
 
-
-
 const server = (done) => {
   connect.server({
     root: settings.dist,
