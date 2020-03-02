@@ -34,9 +34,10 @@ gulp.task('connect', () => {
 
 gulp.task('move:dev', () => {
   gulp.src(`${settings.root}/index.html`)
+    .pipe(replace('%DATE%', newdate))
     .pipe(gulp.dest(`${settings.dev}`));
-  gulp.src(`${settings.root}/images/**`)
-    .pipe(gulp.dest(`${settings.dev}/images`));
+  gulp.src(`${settings.root}/img/**`)
+    .pipe(gulp.dest(`${settings.dev}/img`));
   gulp.src(`${settings.root}/js/starter.js`)
     .pipe(gulp.dest(`${settings.dev}/js`));
 });
@@ -50,6 +51,9 @@ gulp.task('build:sass', () => {
     .pipe(sass(
       { outputStyle: 'compressed' }
     ).on('error', sass.logError))
+    .pipe(rename({
+      suffix: `.${newdate}`
+    }))
     .pipe(gulp.dest(`${settings.dev}/css`));
 });
 
@@ -74,7 +78,7 @@ gulp.task('build:js', () => {
       presets: ['@babel/preset-env']
     }))
     .pipe(rename({
-      basename: 'base',
+      suffix: `.${newdate}`
     }))
     .pipe(gulp.dest(`${settings.dev}/js`));
 });
