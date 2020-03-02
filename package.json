@@ -4,6 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "dev": "gulp dev",
+    "build": "gulp build",
+    "production": "gulp build && gulp production",
     "clean": "rimraf dist"
   },
   "repository": {
